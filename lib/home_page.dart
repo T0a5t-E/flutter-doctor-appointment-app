@@ -25,131 +25,72 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _fetchUserName() async {
-    if (user != null) {
-      DocumentSnapshot userDoc = await _firestore.collection('users').doc(user!.uid).get();
-      if (userDoc.exists) {
-        setState(() {
-          userName = userDoc['name'] ?? user!.email?.split('@')[0];
-        });
-      } else {
-        setState(() {
-          userName = user!.email?.split('@')[0];
-        });
-      }
-    }
+    if (user == null) return;
+    final doc = await _firestore.collection('usuarios').doc(user!.uid).get();
+    setState(() {
+      userName = doc.exists ? doc['nombre'] ?? user!.email?.split('@')[0] : user!.email?.split('@')[0];
+    });
   }
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    setState(() => _selectedIndex = index);
     if (index == 1) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const MessagesPage()),
-      );
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const MessagesPage()));
     } else if (index == 2) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const SettingsPage()),
-      );
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage()));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Menú Principal"),
-      ),
+      appBar: AppBar(title: Text('Hola, ${userName ?? 'Usuario'}')),
       body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Mensaje de bienvenida
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                'Bienvenido, ${userName ?? 'Usuario'}!',
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
+            // Acciones rápidas
+            Row(
+              children: [
+                Expanded(child: _ActionCard(icon: Icons.calendar_today, title: 'Agendar Citas')),
+                const SizedBox(width: 16),
+                Expanded(child: _ActionCard(icon: Icons.lightbulb_outline, title: 'Consejos Médicos')),
+              ],
             ),
-            // Dos widgets: Agendar citas y Consejos médicos
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Expanded(
-                    child: Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          children: [
-                            const Icon(Icons.calendar_today, size: 40),
-                            const SizedBox(height: 8),
-                            const Text('Agendar Citas'),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          children: [
-                            const Icon(Icons.lightbulb_outline, size: 40),
-                            const SizedBox(height: 8),
-                            const Text('Consejos Médicos'),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Lista de especialistas
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text(
-                'Especialistas',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            ),
+            const SizedBox(height: 24),
+
+            // Especialistas
+            const Text('Especialistas', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF007AFF))),
+            const SizedBox(height: 12),
             SizedBox(
-              height: 150,
+              height: 130,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: const [
-                  SpecialistCard(name: 'Cardiólogo', icon: Icons.favorite),
-                  SpecialistCard(name: 'Dermatólogo', icon: Icons.face),
-                  SpecialistCard(name: 'Neurologo', icon: Icons.psychology),
-                  SpecialistCard(name: 'Pediatra', icon: Icons.child_care),
-                  SpecialistCard(name: 'Oncólogo', icon: Icons.local_hospital),
+                  _SpecialistCard(name: 'Cardiólogo', icon: Icons.favorite),
+                  _SpecialistCard(name: 'Dermatólogo', icon: Icons.face),
+                  _SpecialistCard(name: 'Neurólogo', icon: Icons.psychology),
+                  _SpecialistCard(name: 'Pediatra', icon: Icons.child_care),
+                  _SpecialistCard(name: 'Oncólogo', icon: Icons.local_hospital),
                 ],
               ),
             ),
-            // Popular Doctors
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text(
-                'Popular Doctors',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            ),
+            const SizedBox(height: 24),
+
+            // Doctores populares
+            const Text('Doctores Populares', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF007AFF))),
+            const SizedBox(height: 12),
             SizedBox(
-              height: 200,
+              height: 220,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: const [
-                  DoctorCard(name: 'Dr. John Doe', specialty: 'Cardiólogo', rating: 4.8),
-                  DoctorCard(name: 'Dr. Jane Smith', specialty: 'Dermatólogo', rating: 4.9),
-                  DoctorCard(name: 'Dr. Emily Johnson', specialty: 'Neurologo', rating: 4.7),
-                  DoctorCard(name: 'Dr. Michael Brown', specialty: 'Pediatra', rating: 4.6),
-                  DoctorCard(name: 'Dr. Sarah Davis', specialty: 'Oncólogo', rating: 4.9),
+                  _DoctorCard(name: 'Dr. John Doe', specialty: 'Cardiólogo', rating: 4.8),
+                  _DoctorCard(name: 'Dr. Jane Smith', specialty: 'Dermatólogo', rating: 4.9),
+                  _DoctorCard(name: 'Dr. Emily Johnson', specialty: 'Neurólogo', rating: 4.7),
+                  _DoctorCard(name: 'Dr. Michael Brown', specialty: 'Pediatra', rating: 4.6),
+                  _DoctorCard(name: 'Dr. Sarah Davis', specialty: 'Oncólogo', rating: 4.9),
                 ],
               ),
             ),
@@ -157,45 +98,63 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Inicio',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.message),
-            label: 'Mensajes',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Configuración',
-          ),
-        ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
+        selectedItemColor: const Color(0xFF007AFF),
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
+          BottomNavigationBarItem(icon: Icon(Icons.message), label: 'Mensajes'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Ajustes'),
+        ],
       ),
     );
   }
 }
 
-class SpecialistCard extends StatelessWidget {
-  final String name;
+// Tarjetas reutilizables
+class _ActionCard extends StatelessWidget {
   final IconData icon;
-
-  const SpecialistCard({super.key, required this.name, required this.icon});
+  final String title;
+  const _ActionCard({required this.icon, required this.title});
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () {},
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              Icon(icon, size: 40, color: const Color(0xFF007AFF)),
+              const SizedBox(height: 8),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SpecialistCard extends StatelessWidget {
+  final String name;
+  final IconData icon;
+  const _SpecialistCard({required this.name, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Container(
+        width: 100,
+        padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 50),
+            Icon(icon, size: 36, color: const Color(0xFF007AFF)),
             const SizedBox(height: 8),
-            Text(name),
+            Text(name, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12)),
           ],
         ),
       ),
@@ -203,34 +162,30 @@ class SpecialistCard extends StatelessWidget {
   }
 }
 
-class DoctorCard extends StatelessWidget {
+class _DoctorCard extends StatelessWidget {
   final String name;
   final String specialty;
   final double rating;
-
-  const DoctorCard({super.key, required this.name, required this.specialty, required this.rating});
+  const _DoctorCard({required this.name, required this.specialty, required this.rating});
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
+      child: Container(
+        width: 160,
+        padding: const EdgeInsets.all(16),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircleAvatar(
-              radius: 40,
-              backgroundColor: Colors.grey, // Placeholder for doctor image
-            ),
+            const CircleAvatar(radius: 35, backgroundColor: Colors.grey),
+            const SizedBox(height: 12),
+            Text(name, style: const TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+            Text(specialty, style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 8),
-            Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-            Text(specialty),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.star, color: Colors.yellow),
-                Text(rating.toString()),
+                const Icon(Icons.star, color: Colors.amber, size: 18),
+                Text(rating.toString(), style: const TextStyle(fontWeight: FontWeight.w600)),
               ],
             ),
           ],
